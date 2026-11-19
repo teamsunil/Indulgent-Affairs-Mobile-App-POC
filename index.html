@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Indulgent Affairs — Mobile App Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6EEEA; --page:#EDE1DC; --surface:#FFFFFF; --surface2:#F3E6E1; --ink:#2A1520; --muted:#7A5C66;
+  --line:rgba(42,21,32,.12); --wine:#8E2B4F; --wine-ink:#FFF6F3; --gold:#9C7631; --ok:#2F7A55; --danger:#B23A3A;
+  --card-grad:linear-gradient(180deg,transparent 40%,rgba(26,10,18,.88));
+  --display:"Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --body:"Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1A1016; --page:#120B0F; --surface:#26171F; --surface2:#33202A; --ink:#F4E9E6; --muted:#B39AA3;
+    --line:rgba(244,233,230,.11); --wine:#A8365F; --wine-ink:#FFF6F3; --gold:#D3AE68; --ok:#5DBB8A; --danger:#E06464;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1A1016; --page:#120B0F; --surface:#26171F; --surface2:#33202A; --ink:#F4E9E6; --muted:#B39AA3;
+  --line:rgba(244,233,230,.11); --wine:#A8365F; --wine-ink:#FFF6F3; --gold:#D3AE68; --ok:#5DBB8A; --danger:#E06464;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--page);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+img,svg{max-width:100%}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ---------- Stage (desktop presentation) ---------- */
+.stage{min-height:100%;display:flex;align-items:center;justify-content:center;gap:72px;padding:40px 32px}
+.pitch{max-width:400px}
+.pitch h1{font-family:var(--display);font-weight:500;font-size:52px;line-height:1.02;margin:0 0 18px;letter-spacing:-.01em}
+.pitch h1 em{font-style:italic;color:var(--wine)}
+.pitch p{color:var(--muted);margin:0 0 26px;max-width:36ch}
+.pitch h2{font-size:14px;font-weight:700;margin:0 0 10px}
+.tries{list-style:none;margin:0 0 28px;padding:0;display:grid;gap:8px}
+.tries button{width:100%;text-align:left;display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);transition:border-color .2s}
+.tries button:hover{border-color:var(--wine)}
+.tries b{display:block;font-weight:600;font-size:14px}
+.tries span{font-size:13px;color:var(--muted)}
+.tries .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--wine)}
+.stack{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+.stack strong{color:var(--ink);font-weight:600}
+
+.device{width:390px;height:844px;border-radius:54px;padding:11px;background:#0d0709;box-shadow:0 40px 80px -30px rgba(60,10,30,.55),0 0 0 1px rgba(255,255,255,.06) inset;flex:none}
+.app{position:relative;width:100%;height:100%;border-radius:44px;overflow:hidden;background:var(--bg);isolation:isolate}
+.statusbar{position:absolute;top:0;left:0;right:0;height:46px;z-index:60;display:flex;justify-content:space-between;align-items:center;padding:6px 30px 0 34px;font-size:14px;font-weight:600;pointer-events:none;color:var(--ink)}
+.statusbar .notch{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:120px;height:32px;border-radius:20px;background:#0d0709}
+.statusbar i{display:inline-flex;gap:5px;align-items:center;font-style:normal}
+.statusbar .bat{width:24px;height:11px;border:1.5px solid currentColor;border-radius:3px;position:relative}
+.statusbar .bat::after{content:"";position:absolute;inset:1.5px;right:5px;background:currentColor;border-radius:1px}
+.app.dark-top .statusbar{color:#fff}
+
+@media (max-width: 860px){
+  .stage{padding:0;display:block;height:100%}
+  .pitch{display:none}
+  .device{width:100%;height:100%;border-radius:0;padding:0;background:none;box-shadow:none}
+  .app{border-radius:0}
+  .statusbar{display:none}
+}
+.app{--top:52px}
+@media (max-width: 860px){.app{--top:12px}}
+
+/* ---------- Screens ---------- */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s}
+.screen.on{opacity:1;visibility:visible}
+.overlay{position:absolute;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1);visibility:hidden}
+.overlay.open{transform:none;visibility:visible}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 22px;border-radius:26px;font-weight:600;font-size:15px;width:100%;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--wine);color:var(--wine-ink)}
+.btn.ghost{border:1px solid var(--line);background:var(--surface)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.link{color:var(--wine);font-weight:600}
+
+/* splash */
+#splash{background:#1A0D14;color:#F4E9E6;align-items:center;justify-content:center;z-index:50}
+.mark{width:84px;height:84px}
+.mark path{fill:none;stroke:#D3AE68;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:260;stroke-dashoffset:260;animation:draw 1.3s .1s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.wordmark{font-family:var(--display);font-style:italic;font-size:34px;font-weight:500;margin-top:14px;opacity:0;animation:fade .7s .7s forwards}
+@keyframes fade{to{opacity:1}}
+
+/* welcome */
+#welcome{background:#1A0D14;color:#F4E9E6}
+.welcome-art{flex:1;position:relative;overflow:hidden}
+.welcome-art .blob{position:absolute;border-radius:50%;filter:blur(2px)}
+.welcome-art .mask{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:230px;opacity:.95}
+.welcome-copy{padding:0 28px 34px}
+.welcome-copy h2{font-family:var(--display);font-weight:500;font-size:44px;line-height:1.02;margin:0 0 12px}
+.welcome-copy p{color:#C9B2BA;margin:0 0 24px;max-width:32ch}
+.welcome-copy .btn.ghost{background:transparent;border-color:rgba(244,233,230,.25);color:#F4E9E6;margin-top:10px}
+.trust{display:flex;gap:18px;justify-content:center;margin-top:18px;font-size:12px;color:#B39AA3}
+.trust span{display:inline-flex;gap:6px;align-items:center}
+
+/* forms / onboarding */
+.topbar{display:flex;align-items:center;gap:10px;padding:calc(var(--top) + 6px) 16px 10px;min-height:56px}
+.iconbtn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none}
+.iconbtn:hover{background:var(--surface2)}
+.progress{flex:1;display:flex;gap:6px}
+.progress i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.progress i.on{background:var(--wine)}
+.pad{padding:8px 24px 24px}
+.h{font-family:var(--display);font-weight:500;font-size:34px;line-height:1.08;margin:6px 0 8px}
+.sub{color:var(--muted);margin:0 0 22px}
+.choice{display:flex;gap:14px;align-items:center;width:100%;text-align:left;padding:16px;border-radius:18px;border:1.5px solid var(--line);background:var(--surface);margin-bottom:10px;transition:border-color .2s}
+.choice[aria-pressed="true"]{border-color:var(--wine);box-shadow:0 0 0 3px color-mix(in srgb,var(--wine) 16%,transparent)}
+.choice .glyph{width:46px;height:46px;border-radius:14px;background:var(--surface2);display:grid;place-items:center;font-family:var(--display);font-size:24px;font-style:italic;color:var(--wine);flex:none}
+.choice b{display:block;font-weight:600}
+.choice small{color:var(--muted);font-size:13px}
+.choice .offer{color:var(--ok);font-weight:600}
+.field{display:block;margin-bottom:16px}
+.field span{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.field input{width:100%;height:50px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);padding:0 14px}
+.field input:focus{outline:none;border-color:var(--wine)}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.chip{height:36px;padding:0 14px;border-radius:18px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.check{display:flex;gap:12px;align-items:flex-start;font-size:13px;color:var(--muted);margin:6px 0 20px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--wine);margin:0;flex:none}
+.footer-cta{padding:12px 24px 22px;border-top:1px solid var(--line);background:var(--bg)}
+
+/* PIN */
+.pin{display:flex;flex-direction:column;align-items:center;padding:10px 24px}
+.dots{display:flex;gap:18px;margin:18px 0 8px}
+.dots i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted);transition:background .15s,border-color .15s}
+.dots i.on{background:var(--wine);border-color:var(--wine)}
+.dots.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.pin-msg{min-height:22px;font-size:13px;color:var(--danger);text-align:center}
+.keys{display:grid;grid-template-columns:repeat(3,72px);gap:14px 26px;margin-top:12px}
+.keys button{width:72px;height:72px;border-radius:50%;background:var(--surface2);font-size:26px;font-weight:500;display:grid;place-items:center}
+.keys button:active{background:var(--line)}
+.keys .blank{visibility:hidden}
+.keys .del{background:none;font-size:14px;font-weight:600}
+
+/* main app chrome */
+.apphead{display:flex;align-items:center;justify-content:space-between;padding:calc(var(--top) + 4px) 18px 8px}
+.apphead .brand{font-family:var(--display);font-style:italic;font-size:28px;font-weight:600;color:var(--wine);line-height:1}
+.hidebtn{display:inline-flex;gap:6px;align-items:center;height:34px;padding:0 12px;border-radius:17px;background:var(--surface2);font-size:13px;font-weight:600}
+.tabbar{display:flex;justify-content:space-around;padding:8px 6px 14px;border-top:1px solid var(--line);background:var(--bg)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted);padding:4px 10px;position:relative}
+.tab[aria-current="page"]{color:var(--wine)}
+.tab .badge{position:absolute;top:0;right:8px;min-width:16px;height:16px;border-radius:8px;background:var(--wine);color:var(--wine-ink);font-size:10px;display:grid;place-items:center;padding:0 4px}
+
+/* avatars */
+.av{position:relative;overflow:hidden;border-radius:50%;background:linear-gradient(160deg,hsl(var(--h1) 48% 66%),hsl(var(--h2) 42% 30%));flex:none}
+.av svg{position:absolute;left:0;bottom:0;width:100%;height:88%;fill:hsl(var(--h2) 40% 18% / .6)}
+.av.blur svg{filter:blur(7px)}
+.av.blur{background:linear-gradient(160deg,hsl(var(--h1) 30% 58%),hsl(var(--h2) 30% 32%))}
+.av.sq{border-radius:0}
+
+/* discover */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 18px 12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.deckwrap{flex:1;display:flex;flex-direction:column;padding:0 16px 10px;min-height:0}
+.deck{position:relative;flex:1;min-height:0}
+.card{position:absolute;inset:0;border-radius:26px;overflow:hidden;background:var(--surface2);touch-action:none;user-select:none;transition:transform .3s cubic-bezier(.2,.8,.2,1);box-shadow:0 18px 30px -22px rgba(40,5,20,.6)}
+.card.behind{transform:scale(.95) translateY(12px);filter:brightness(.92)}
+.card .av{position:absolute;inset:0;border-radius:0;width:100%;height:100%}
+.card .av svg{height:80%}
+.card .shade{position:absolute;inset:0;background:var(--card-grad)}
+.card .info{position:absolute;left:0;right:0;bottom:0;padding:20px;color:#fff}
+.card h3{font-family:var(--display);font-weight:600;font-size:34px;margin:0;line-height:1}
+.card h3 span{font-weight:500;font-size:28px;opacity:.9}
+.card .meta{font-size:13px;opacity:.85;margin:6px 0 10px;display:flex;gap:10px;flex-wrap:wrap}
+.card .tags{display:flex;gap:6px;flex-wrap:wrap}
+.card .tags span{font-size:12px;padding:4px 10px;border-radius:12px;background:rgba(255,255,255,.16);backdrop-filter:blur(6px)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 10px;border-radius:14px}
+.card .verified{position:absolute;top:16px;left:16px;background:rgba(255,255,255,.9);color:#2A1520}
+.card .masked{position:absolute;top:16px;right:16px;background:rgba(26,10,18,.55);color:#fff;backdrop-filter:blur(6px)}
+.stamp{position:absolute;top:60px;font-family:var(--display);font-size:34px;font-weight:600;padding:2px 14px;border:3px solid;border-radius:10px;opacity:0;transform:rotate(-12deg)}
+.stamp.yes{left:24px;color:#7FE0AE}
+.stamp.no{right:24px;color:#FF9C9C;transform:rotate(12deg)}
+.actions{display:flex;justify-content:center;gap:22px;padding:14px 0 4px}
+.round{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 18px -12px rgba(40,5,20,.5)}
+.round.like{background:var(--wine);color:var(--wine-ink);border:0;width:70px;height:70px}
+.round.sm{width:50px;height:50px;margin-top:6px}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;gap:12px;color:var(--muted)}
+.empty h3{font-family:var(--display);font-size:28px;font-weight:500;color:var(--ink);margin:0}
+
+/* lists */
+.section-h{font-family:var(--display);font-size:30px;font-weight:500;margin:4px 18px 4px}
+.section-p{color:var(--muted);font-size:13px;margin:0 18px 14px}
+.row{display:flex;gap:14px;align-items:center;padding:12px 18px;width:100%;text-align:left}
+.row:hover{background:var(--surface2)}
+.row .txt{flex:1;min-width:0}
+.row b{display:flex;gap:6px;align-items:center;font-weight:600}
+.row .last{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .time{font-size:12px;color:var(--muted);align-self:flex-start;margin-top:3px;text-align:right}
+.unread{width:9px;height:9px;border-radius:50%;background:var(--wine);display:inline-block;margin-top:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 18px 20px}
+.tile{position:relative;aspect-ratio:3/4;border-radius:20px;overflow:hidden;text-align:left}
+.tile .av{position:absolute;inset:0;width:100%;height:100%;border-radius:0}
+.tile .shade{position:absolute;inset:0;background:var(--card-grad)}
+.tile .t{position:absolute;left:12px;right:12px;bottom:10px;color:#fff}
+.tile .t b{font-family:var(--display);font-size:22px;font-weight:600;display:block;line-height:1.1}
+.tile .t small{font-size:12px;opacity:.85}
+.banner{margin:0 18px 14px;padding:14px 16px;border-radius:18px;background:var(--surface2);font-size:13px;display:flex;gap:12px;align-items:center}
+.banner b{display:block;font-size:14px}
+
+/* chat */
+.chathead{display:flex;align-items:center;gap:10px;padding:calc(var(--top) + 4px) 10px 10px;border-bottom:1px solid var(--line)}
+.chathead .who{flex:1;min-width:0}
+.chathead b{display:block;font-weight:600}
+.chathead small{font-size:12px;color:var(--muted)}
+.expiry{display:flex;gap:6px;align-items:center;justify-content:center;font-size:12px;color:var(--muted);padding:8px 16px;background:var(--surface2)}
+.msgs{display:flex;flex-direction:column;gap:6px;padding:16px 14px}
+.daymark{align-self:center;font-size:12px;color:var(--muted);margin:6px 0}
+.bub{max-width:78%;padding:10px 14px;border-radius:20px;font-size:15px;line-height:1.4;position:relative;animation:pop .22s ease}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.bub.them{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:6px}
+.bub.me{align-self:flex-end;background:var(--wine);color:var(--wine-ink);border-bottom-right-radius:6px}
+.bub .tm{display:flex;gap:4px;align-items:center;justify-content:flex-end;font-size:11px;opacity:.7;margin-top:2px}
+.typing{align-self:flex-start;display:flex;gap:4px;padding:14px 16px;border-radius:20px;background:var(--surface);border:1px solid var(--line)}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{50%{opacity:.25}}
+.composer{display:flex;gap:8px;padding:10px 12px 14px;border-top:1px solid var(--line);background:var(--bg)}
+.composer input{flex:1;height:46px;border-radius:23px;border:1px solid var(--line);background:var(--surface);padding:0 16px}
+.composer input:focus{outline:none;border-color:var(--wine)}
+.composer .send{width:46px;height:46px;border-radius:50%;background:var(--wine);color:var(--wine-ink);display:grid;place-items:center}
+.icebreak{display:flex;gap:8px;overflow-x:auto;padding:0 12px 8px;scrollbar-width:none}
+
+/* profile detail */
+.hero{position:relative;height:420px;flex:none}
+.hero .av{position:absolute;inset:0;width:100%;height:100%;border-radius:0}
+.hero .shade{position:absolute;inset:0;background:var(--card-grad)}
+.hero .back{position:absolute;top:calc(var(--top) + 2px);left:12px;background:rgba(26,10,18,.45);color:#fff;backdrop-filter:blur(6px)}
+.hero .info{position:absolute;bottom:18px;left:20px;right:20px;color:#fff}
+.hero h2{font-family:var(--display);font-size:40px;font-weight:600;margin:0;line-height:1}
+.detail{padding:18px 20px 120px}
+.detail h4{font-size:13px;font-weight:700;margin:20px 0 8px;color:var(--muted)}
+.detail p{margin:0}
+.dock{position:absolute;left:0;right:0;bottom:0;display:flex;gap:14px;justify-content:center;padding:14px 20px 20px;background:linear-gradient(transparent,var(--bg) 35%)}
+
+/* forum */
+.thread{display:block;width:100%;text-align:left;padding:16px 18px;border-bottom:1px solid var(--line)}
+.thread .cat{font-size:12px;font-weight:600;color:var(--wine)}
+.thread h4{font-size:16px;font-weight:600;margin:4px 0 6px;line-height:1.3}
+.thread .by{font-size:12px;color:var(--muted);display:flex;gap:12px}
+.post{padding:18px;border-bottom:1px solid var(--line)}
+.post .by{display:flex;gap:10px;align-items:center;font-size:13px;margin-bottom:8px}
+.post .by b{font-weight:600}
+.post .by small{color:var(--muted)}
+.mono{width:32px;height:32px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;font-family:var(--display);font-style:italic;font-weight:600;color:var(--wine)}
+
+/* me */
+.mecard{display:flex;gap:16px;align-items:center;margin:4px 18px 16px;padding:16px;border-radius:22px;background:var(--surface);border:1px solid var(--line)}
+.mecard h3{font-family:var(--display);font-size:28px;font-weight:600;margin:0;line-height:1.05}
+.mecard small{color:var(--muted);font-size:13px}
+.plan{margin:0 18px 18px;padding:18px;border-radius:22px;background:#2A1520;color:#F4E9E6;position:relative;overflow:hidden}
+.plan::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;border:1px solid rgba(211,174,104,.35)}
+.plan b{font-family:var(--display);font-size:24px;font-weight:600;display:block}
+.plan small{color:#C9B2BA}
+.plan .bar{height:5px;border-radius:3px;background:rgba(255,255,255,.15);margin:12px 0 10px}
+.plan .bar i{display:block;height:100%;border-radius:3px;background:#D3AE68}
+.plan button{color:#D3AE68;font-weight:600;font-size:14px}
+.group{margin:0 18px 18px;border-radius:20px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.group h4{font-size:13px;font-weight:700;color:var(--muted);margin:0;padding:14px 16px 4px}
+.set{display:flex;gap:14px;align-items:center;padding:12px 16px;width:100%;text-align:left}
+.set + .set{border-top:1px solid var(--line)}
+.set .ico{width:34px;height:34px;border-radius:10px;background:var(--surface2);display:grid;place-items:center;color:var(--wine);flex:none}
+.set .txt{flex:1}
+.set b{display:block;font-weight:600;font-size:14px}
+.set small{display:block;font-size:12px;color:var(--muted);line-height:1.35}
+.set .val{font-size:13px;color:var(--muted)}
+.switch{width:46px;height:28px;border-radius:14px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--wine)}
+.switch[aria-checked="true"]::after{transform:translateX(18px)}
+
+/* plans */
+.plans{padding:0 18px 30px}
+.pcard{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;padding:18px;border-radius:20px;border:1.5px solid var(--line);background:var(--surface);margin-bottom:10px;position:relative}
+.pcard[aria-pressed="true"]{border-color:var(--wine);box-shadow:0 0 0 3px color-mix(in srgb,var(--wine) 16%,transparent)}
+.pcard b{display:block;font-weight:600}
+.pcard small{color:var(--muted);font-size:13px}
+.pcard .price{font-family:var(--display);font-size:30px;font-weight:600;line-height:1}
+.pcard .flag{position:absolute;top:-10px;left:16px;font-size:11px;font-weight:700;background:var(--gold);color:#1A0D14;padding:2px 10px;border-radius:10px}
+.feat{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:10px;font-size:14px}
+.feat li{display:flex;gap:10px;align-items:center}
+.feat svg{color:var(--ok);flex:none}
+
+/* sheet, toast, match */
+.scrim{position:absolute;inset:0;background:rgba(15,5,10,.5);z-index:70;opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
+.scrim.on{opacity:1;visibility:visible}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:71;background:var(--bg);border-radius:28px 28px 0 0;padding:10px 22px 26px;transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);visibility:hidden;max-height:88%;overflow-y:auto}
+.sheet.on{transform:none;visibility:visible}
+.sheet .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+.sheet h3{font-family:var(--display);font-size:28px;font-weight:500;margin:0 0 6px}
+.sheet p{color:var(--muted);margin:0 0 16px;font-size:14px}
+.sheet .opt{display:block;width:100%;text-align:left;padding:14px 0;border-bottom:1px solid var(--line);font-weight:600}
+.sheet .opt.danger{color:var(--danger)}
+.paybox{display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:18px;font-size:14px}
+.toast{position:absolute;left:14px;right:14px;top:calc(var(--top) + 6px);z-index:90;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:18px;font-size:14px;transform:translateY(-140%);transition:transform .35s cubic-bezier(.2,.8,.2,1);display:flex;gap:12px;align-items:center;text-align:left}
+.toast.on{transform:none}
+.toast b{display:block}
+.toast .apic{width:36px;height:36px;border-radius:10px;background:#2A1520;display:grid;place-items:center;flex:none}
+#match{position:absolute;inset:0;z-index:80;background:radial-gradient(circle at 50% 35%,#5E1B36,#1A0D14 70%);color:#F4E9E6;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s}
+#match.on{opacity:1;visibility:visible}
+#match h2{font-family:var(--display);font-style:italic;font-size:46px;font-weight:500;margin:22px 0 8px;line-height:1}
+#match p{color:#C9B2BA;margin:0 0 28px;max-width:30ch}
+.pair{display:flex}
+.pair .av{width:120px;height:120px;border:3px solid #D3AE68}
+.pair .av + .av{margin-left:-24px}
+#match.on .pair .av:first-child{animation:inl .6s ease}
+#match.on .pair .av:last-child{animation:inr .6s ease}
+@keyframes inl{from{transform:translateX(-60px);opacity:0}}
+@keyframes inr{from{transform:translateX(60px);opacity:0}}
+#match .btn.ghost{background:transparent;color:#F4E9E6;border-color:rgba(244,233,230,.25);margin-top:10px}
+
+/* calculator disguise (deliberately generic) */
+#calc{position:absolute;inset:0;z-index:95;background:#000;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:0 16px 26px;font-family:-apple-system,system-ui,sans-serif;visibility:hidden;opacity:0;transition:opacity .15s}
+#calc.on{visibility:visible;opacity:1}
+#calc .disp{font-size:72px;font-weight:300;text-align:right;padding:0 10px 10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#calc .ck{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+#calc button{aspect-ratio:1;border-radius:50%;background:#333;font-size:30px;color:#fff}
+#calc button.op{background:#FF9F0A}
+#calc button.fn{background:#A5A5A5;color:#000}
+#calc button.zero{grid-column:span 2;aspect-ratio:auto;border-radius:44px;text-align:left;padding-left:30px}
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="pitch">
+    <h1>Indulgent Affairs, <em>in their pocket.</em></h1>
+    <p>A working mobile app prototype for indulgentaffairs.com, built around what members join for: discretion, checked profiles and private conversation.</p>
+    <h2>Try these in the prototype</h2>
+    <ul class="tries">
+      <li><button data-demo="join"><span class="n">1</span><span><b>Join as a woman, man or couple</b><span>See the free-for-women and first-month-free offers in sign-up.</span></span></button></li>
+      <li><button data-demo="match"><span class="n">2</span><span><b>Get a mutual match</b><span>Like Sophie. Blurred photos reveal only when both say yes.</span></span></button></li>
+      <li><button data-demo="hide"><span class="n">3</span><span><b>Hide the app in one tap</b><span>It turns into a working calculator. Type your PIN, then =, to return.</span></span></button></li>
+      <li><button data-demo="chat"><span class="n">4</span><span><b>Chat with expiring messages</b><span>Set messages to delete after 1 or 24 hours. Replies are simulated.</span></span></button></li>
+      <li><button data-demo="plans"><span class="n">5</span><span><b>Upgrade in the app</b><span>The site’s real plans: £25, £60 or £90, ready for in-app purchase.</span></span></button></li>
+    </ul>
+    <div class="stack"><strong>Proposed build:</strong> Flutter or React Native for iOS and Android, connected to the existing WordPress site through its REST API, with push notifications and App Store / Play billing. All members shown here are fictional. Default PIN is 1234.</div>
+  </aside>
+
+  <div class="device">
+    <div class="app dark-top" id="app">
+      <div class="statusbar" aria-hidden="true"><span>9:41</span><span class="notch"></span><i><svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg><span class="bat"></span></i></div>
+
+      <!-- Splash -->
+      <section class="screen on" id="splash" aria-label="Loading">
+        <svg class="mark" viewBox="0 0 100 60" aria-hidden="true"><path d="M4 18c14-8 30-8 46 4 16-12 32-12 46-4-2 18-14 30-28 30-9 0-14-6-18-12-4 6-9 12-18 12C18 48 6 36 4 18zM28 28a6 5 0 1 0 0 .1M72 28a6 5 0 1 0 0 .1"/></svg>
+        <div class="wordmark">Indulgent Affairs</div>
+      </section>
+
+      <!-- Welcome -->
+      <section class="screen" id="welcome" aria-label="Welcome">
+        <div class="welcome-art" aria-hidden="true">
+          <div class="blob" style="width:340px;height:340px;left:-80px;top:40px;background:radial-gradient(circle,#6B1E3A,transparent 70%)"></div>
+          <div class="blob" style="width:300px;height:300px;right:-90px;top:200px;background:radial-gradient(circle,#4A2236,transparent 70%)"></div>
+          <svg class="mask" viewBox="0 0 100 60"><path d="M4 18c14-8 30-8 46 4 16-12 32-12 46-4-2 18-14 30-28 30-9 0-14-6-18-12-4 6-9 12-18 12C18 48 6 36 4 18z" fill="none" stroke="#D3AE68" stroke-width="1.2"/><ellipse cx="28" cy="28" rx="7" ry="5" fill="#1A0D14" stroke="#D3AE68" stroke-width="1"/><ellipse cx="72" cy="28" rx="7" ry="5" fill="#1A0D14" stroke="#D3AE68" stroke-width="1"/></svg>
+        </div>
+        <div class="welcome-copy">
+          <h2>Where indulgence meets discretion.</h2>
+          <p>Private dating for married, attached and single adults in the UK. Free for women, for life.</p>
+          <button class="btn primary" data-act="start-join">Join free</button>
+          <button class="btn ghost" data-act="go-login">I already have an account</button>
+          <div class="trust"><span>✓ Profiles checked</span><span>✓ 18+ only</span><span>✓ Private chat</span></div>
+        </div>
+      </section>
+
+      <!-- Join -->
+      <section class="screen" id="join" aria-label="Join"></section>
+
+      <!-- Login -->
+      <section class="screen" id="login" aria-label="Unlock">
+        <div class="topbar"><button class="iconbtn" data-act="to-welcome" aria-label="Back"></button></div>
+        <div class="pad" style="text-align:center;padding-bottom:0"><div class="h">Welcome back</div><p class="sub" style="margin:0">Enter your PIN to open Indulgent Affairs.</p></div>
+        <div id="loginPin"></div>
+      </section>
+
+      <!-- Main -->
+      <section class="screen" id="main" aria-label="Indulgent Affairs">
+        <header class="apphead">
+          <span class="brand">Indulgent</span>
+          <button class="hidebtn" data-act="hide" aria-label="Hide app"></button>
+        </header>
+        <div id="view" class="scroll" style="display:flex;flex-direction:column"></div>
+        <nav class="tabbar" id="tabbar"></nav>
+      </section>
+
+      <!-- Overlays -->
+      <section class="overlay" id="ov-profile"></section>
+      <section class="overlay" id="ov-chat"></section>
+      <section class="overlay" id="ov-thread"></section>
+      <section class="overlay" id="ov-plans"></section>
+
+      <div id="match" role="dialog" aria-modal="true" aria-label="Mutual interest"></div>
+      <div class="scrim" id="scrim" data-act="close-sheet"></div>
+      <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+      <button class="toast" id="toast" aria-live="polite"></button>
+
+      <!-- Disguise -->
+      <section id="calc" aria-label="Calculator">
+        <div class="disp" id="calcDisp">0</div>
+        <div class="ck" id="calcKeys"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const app=$('#app');
+
+/* ---------- Icons ---------- */
+const P={
+  discover:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  chat:'<path d="M4 5h16v11H9l-5 4z"/>',
+  forum:'<path d="M3 4h12v8H7l-4 3zM9 15v2h8l4 3V9h-3"/>',
+  me:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.5-7 8-7s7 2.5 8 7"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  hide:'<path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0 1 12 6c5 0 9 6 9 6a16 16 0 0 1-2.8 3.4M6.6 7.6C4.3 9.2 3 12 3 12s4 6 9 6a8.6 8.6 0 0 0 4.3-1.2"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  send:'<path d="M4 12l16-8-6 16-3-7z"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  check:'<path d="M5 12l5 5 9-10"/>',
+  blur:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7" stroke-dasharray="2 3"/>',
+  ghost:'<path d="M6 20V10a6 6 0 0 1 12 0v10l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5z"/><circle cx="10" cy="10" r=".6"/><circle cx="14" cy="10" r=".6"/>',
+  bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
+  calc:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h1M12 12h1M16 12h0M8 16h1M12 16h1M16 15v2"/>',
+  flag:'<path d="M5 21V4h11l-2 4 2 4H5"/>',
+  more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+  pin:'<path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/>',
+  star:'<path d="M12 4l2.4 5 5.6.6-4.2 3.8 1.2 5.6L12 16.2 7 19l1.2-5.6L4 9.6 9.6 9z"/>',
+  logout:'<path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10"/>'
+};
+const ic=(n,s=22,w=1.7)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
+
+/* ---------- Data (fictional) ---------- */
+const PEOPLE=[
+ {id:'sophie',name:'Sophie',age:38,status:'Married',area:'Guildford, Surrey',miles:6,hue:[345,15],likesYou:true,
+  bio:'Two children, one husband who travels a lot. I miss being properly flirted with. Weekday lunches suit me best, and I like someone who can hold a conversation.',
+  wants:['Daytime meets','Conversation first','Wine bars'],
+  replies:['Well, hello. I wondered if you’d say yes.','I’m free most Tuesdays after 12. Do you know the Ivy in Guildford?','Perfect. I’ll keep my phone on silent, as always 😉']},
+ {id:'james-ella',name:'James & Ella',age:'41 & 39',status:'Couple',area:'Sevenoaks, Kent',miles:18,hue:[20,350],couple:true,likesYou:false,
+  bio:'Together twelve years, still curious. We’d like to meet a confident, kind woman for dinner and see where the evening goes.',
+  wants:['Dinner dates','Couples','Weekends'],
+  replies:['Hi! Ella here, James is cooking.','We’re thinking a quiet dinner first, no pressure at all.']},
+ {id:'hannah',name:'Hannah',age:35,status:'Single',area:'Clifton, Bristol',miles:42,hue:[300,250],likesYou:true,
+  bio:'Single, busy, and not interested in anything serious. Married men who know how to be discreet are welcome. Theatre, oysters, long walks with no phones.',
+  wants:['Discreet','Evenings','Theatre'],
+  replies:['Hi you. Good taste in women, clearly 😄','I’m in London on the 14th for work. Drinks?']},
+ {id:'victoria',name:'Victoria',age:47,status:'Married',area:'Alderley Edge, Cheshire',miles:9,hue:[30,5],likesYou:false,
+  bio:'Happily married in every way but one. Looking for a gentleman, ideally also married, who understands the rules without needing them spelled out.',
+  wants:['Married only','Hotel lunches','Long term'],
+  replies:['Good afternoon.','I appreciate a man who takes his time.']},
+ {id:'lauren',name:'Lauren',age:33,status:'Attached',area:'Headingley, Leeds',miles:31,hue:[200,330],likesYou:true,
+  bio:'Long-distance relationship, very short attention span. Gym in the morning, cocktails in the evening. Let’s chat first and see.',
+  wants:['Chat first','Cocktails','Spontaneous'],
+  replies:['Hey! I was hoping you’d message 🙈','What are you doing Friday night?']},
+ {id:'daniel',name:'Daniel',age:44,status:'Married',area:'Richmond, London',miles:4,hue:[210,230],likesYou:true,
+  bio:'Architect, father of two, and a good listener. Looking for a warm, witty woman for long lunches and good conversation.',
+  wants:['Long lunches','Discreet','London'],
+  replies:['Hello, lovely to match with you.','I know a little Italian place by the river. Thursday?']},
+ {id:'claire',name:'Claire',age:42,status:'Attached',area:'Chelsea, London',miles:3,hue:[10,330],deck:false,
+  bio:'Gallery manager. I like discretion, dry humour and a decent Sancerre.',wants:['Wine','Art','Daytime'],
+  replies:['Ha! You’ll recognise me, I promise.','See you Thursday x']},
+ {id:'mark',name:'Mark',age:46,status:'Married',area:'Reading, Berkshire',miles:22,hue:[220,260],deck:false,
+  bio:'Easy-going, well travelled, very discreet.',wants:['Chat first','Weekdays'],
+  replies:['Thanks for replying!','Are you free for a coffee next week?']}
+];
+const byId=id=>PEOPLE.find(p=>p.id===id);
+
+const THREADS=[
+ {id:'t1',cat:'First steps',title:'First-timer nerves: how did you plan your first meet?',by:'VelvetFox',ago:'2h',replies:[
+   ['RoseAndThorn','Somewhere public, daytime, and I told a friend where I was. Coffee first, nothing else expected.','1h'],
+   ['QuietCharm','Agree on a time limit in advance. Mine was an hour and it turned into three 😊','45m']],
+  body:'Matched with someone lovely and we’re talking about meeting. I’m excited and terrified in equal measure. How did you handle the first one?'},
+ {id:'t2',cat:'Privacy',title:'Keeping your phone private without looking suspicious',by:'MrDiscreet',ago:'5h',replies:[
+   ['SilkScarf','The calculator disguise in the app has saved me twice. And turn off message previews.','4h']],
+  body:'What are your habits? I don’t want a locked-down phone to be the thing that gives it away.'},
+ {id:'t3',cat:'Meet-ups',title:'Quiet hotels in Manchester for a lunchtime visit?',by:'NorthernLights',ago:'1d',replies:[
+   ['GentlemanJ','Anywhere with a separate lift lobby. Day-rate rooms are increasingly common.','20h']],
+  body:'Looking for somewhere stylish but not flashy. Recommendations welcome by DM too.'},
+ {id:'t4',cat:'Stories',title:'Three months in and it’s the best decision I’ve made',by:'SecondSpring',ago:'2d',replies:[],
+  body:'Not here to brag, just to say: if you’re hesitating, the people here are kinder than you’d expect.'}
+];
+
+/* ---------- State ---------- */
+const S={
+  gender:null,nick:'',status:'Married',region:'London',pin:'1234',
+  tab:'discover',filter:'Everyone',seen:new Set(),matches:new Set(['claire']),liked:new Set(),
+  plan:'trial',mask:true,incognito:false,convLock:false,discreetNotif:true,
+  chats:{
+    claire:{unread:false,expiry:'24 hours',msgs:[
+      {from:'them',text:'That wine bar sounded perfect. Is Thursday still okay?',t:'Yesterday'},
+      {from:'me',text:'Thursday works. 1pm?',t:'Yesterday'},
+      {from:'them',text:'Lovely. I’ll be the one pretending to read a book.',t:'09:12'}]},
+    mark:{unread:true,expiry:'Off',msgs:[{from:'them',text:'Hi there, loved your profile. Fancy a chat?',t:'08:40'}]}
+  },
+  replyIx:{},forumCat:'All',notified:false
+};
+const isMatch=id=>S.matches.has(id);
+
+/* ---------- Avatar ---------- */
+function av(p,{size,reveal,cls=''}={}){
+  const r=reveal??isMatch(p.id);
+  const sil=p.couple
+    ?'<ellipse cx="34" cy="46" rx="15" ry="18"/><path d="M2 122c2-24 14-38 32-38s28 12 30 38z"/><ellipse cx="68" cy="42" rx="15" ry="18"/><path d="M38 122c2-26 12-40 30-40s30 14 32 40z"/>'
+    :'<ellipse cx="50" cy="44" rx="19" ry="22"/><path d="M10 122c3-28 20-42 40-42s37 14 40 42z"/>';
+  const st=size?`width:${size}px;height:${size}px;`:'';
+  return `<div class="av ${r?'':'blur'} ${cls}" style="--h1:${p.hue[0]};--h2:${p.hue[1]};${st}"><svg viewBox="0 0 100 120" preserveAspectRatio="xMidYMax meet">${sil}</svg></div>`;
+}
+const me=()=>({id:'me',hue:[330,280],couple:S.gender==='Couple'});
+
+/* ---------- Helpers ---------- */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));app.classList.toggle('dark-top',id==='splash'||id==='welcome')}
+function openOv(id){$('#'+id).classList.add('open')}
+function closeOv(id){$('#'+id).classList.remove('open')}
+let toastT;
+function toast(html,onTap){const t=$('#toast');t.innerHTML=html;t.onclick=()=>{t.classList.remove('on');onTap&&onTap()};t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3600)}
+function sheet(html){$('#sheet').innerHTML='<div class="grab"></div>'+html;$('#sheet').classList.add('on');$('#scrim').classList.add('on')}
+function closeSheet(){$('#sheet').classList.remove('on');$('#scrim').classList.remove('on')}
+const now=()=>{const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')};
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- PIN pad ---------- */
+function pinPad(el,onDone){
+  let v='';
+  el.innerHTML=`<div class="pin"><div class="dots">${'<i></i>'.repeat(4)}</div><div class="pin-msg"></div><div class="keys">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join('')}<button class="blank" tabindex="-1" aria-hidden="true"></button><button data-k="0">0</button><button class="del" data-k="del">Delete</button></div></div>`;
+  const dots=el.querySelectorAll('.dots i'),msg=el.querySelector('.pin-msg');
+  const paint=()=>dots.forEach((d,i)=>d.classList.toggle('on',i<v.length));
+  const api={fail(m){el.querySelector('.dots').classList.add('shake');msg.textContent=m;setTimeout(()=>{el.querySelector('.dots').classList.remove('shake');v='';paint()},420)}};
+  el.querySelector('.keys').onclick=e=>{const k=e.target.closest('button')?.dataset.k;if(!k)return;msg.textContent='';
+    if(k==='del')v=v.slice(0,-1);else if(v.length<4)v+=k;paint();
+    if(v.length===4)setTimeout(()=>onDone(v,api),120)};
+  return api;
+}
+
+/* ---------- Onboarding ---------- */
+let step=0;
+function renderJoin(){
+  const el=$('#join');
+  const prog=`<div class="progress">${[0,1,2].map(i=>`<i class="${i<=step?'on':''}"></i>`).join('')}</div>`;
+  const back=`<button class="iconbtn" data-act="join-back" aria-label="Back">${ic('back')}</button>`;
+  if(step===0){
+    const opts=[['Woman','W','Free membership for life',true],['Man','M','First month free, then from £15 a month'],['Couple','C','First month free, then from £15 a month']];
+    el.innerHTML=`<div class="topbar">${back}${prog}</div><div class="scroll pad"><div class="h">Who’s joining?</div><p class="sub">Everyone joins free. You can change how you appear later.</p>
+    ${opts.map(([g,l,t,f])=>`<button class="choice" data-act="pick-gender" data-g="${g}" aria-pressed="${S.gender===g}"><span class="glyph">${l}</span><span><b>${g==='Couple'?'We’re a couple':'I’m a '+g.toLowerCase()}</b><small class="${f?'offer':''}">${t}</small></span></button>`).join('')}
+    </div><div class="footer-cta"><button class="btn primary" data-act="join-next" ${S.gender?'':'disabled'}>Continue</button></div>`;
+  }else if(step===1){
+    el.innerHTML=`<div class="topbar">${back}${prog}</div><div class="scroll pad"><div class="h">Your discreet profile</div><p class="sub">Use a nickname. Your real name is never shown to members.</p>
+    <label class="field"><span>Nickname</span><input id="nick" maxlength="20" placeholder="For example, ScarletLace" value="${esc(S.nick)}" autocomplete="off"></label>
+    <div class="field"><span>Relationship status</span><div class="seg">${['Married','Attached','Single'].map(s=>`<button class="chip" data-act="pick-status" data-s="${s}" aria-pressed="${S.status===s}">${s}</button>`).join('')}</div></div>
+    <label class="field"><span>Area</span><input id="region" value="${esc(S.region)}" placeholder="Town or county"></label>
+    <label class="check"><input type="checkbox" id="age18"> <span>I’m 18 or over and I agree to the community guidelines and privacy policy.</span></label>
+    </div><div class="footer-cta"><button class="btn primary" id="j2" data-act="join-next" disabled>Continue</button></div>`;
+    const chk=()=>{$('#j2').disabled=!($('#nick').value.trim()&&$('#age18').checked)};
+    $('#nick').oninput=chk;$('#age18').onchange=chk;
+  }else{
+    el.innerHTML=`<div class="topbar">${back}${prog}</div><div class="pad" style="text-align:center;padding-bottom:0"><div class="h">Create your app PIN</div><p class="sub" style="margin:0 auto;max-width:30ch">You’ll use it to open the app and to leave the calculator disguise.</p></div><div id="joinPin"></div>`;
+    pinPad($('#joinPin'),v=>{S.pin=v;S.plan=S.gender==='Woman'?'free':'trial';enterApp(true)});
+  }
+}
+
+/* ---------- Main ---------- */
+const TABS=[['discover','Discover','discover'],['likes','Likes you','heart'],['chats','Chats','chat'],['forum','Forum','forum'],['me','Me','me']];
+function renderTabs(){
+  const unread=Object.values(S.chats).filter(c=>c.unread).length;
+  const likeN=PEOPLE.filter(p=>p.likesYou&&!isMatch(p.id)).length;
+  $('#tabbar').innerHTML=TABS.map(([k,l,i])=>`<button class="tab" data-act="tab" data-t="${k}" ${S.tab===k?'aria-current="page"':''}>${ic(i,24)}${l}${k==='chats'&&unread?`<span class="badge">${unread}</span>`:''}${k==='likes'&&likeN?`<span class="badge">${likeN}</span>`:''}</button>`).join('');
+}
+function render(){renderTabs();({discover:vDiscover,likes:vLikes,chats:vChats,forum:vForum,me:vMe})[S.tab]();$('#view').scrollTop=0}
+
+function enterApp(isNew){
+  show('main');S.tab='discover';render();
+  $('.hidebtn').innerHTML=ic('hide',16)+'Hide';
+  if(isNew)setTimeout(()=>toast(`<span class="apic">${ic('check',18)}</span><span><b>Welcome, ${esc(S.nick||'there')}</b>${S.plan==='free'?'Your free lifetime membership is active.':'Your free month has started.'}</span>`),500);
+  if(!S.notified){S.notified=true;setTimeout(notifyMark,9000)}
+}
+function notifyMark(){
+  if(!$('#main').classList.contains('on'))return;
+  const t=S.discreetNotif?'<b>New message</b>Open the app to read it.':'<b>Mark</b>Are you free for a coffee next week?';
+  S.chats.mark.msgs.push({from:'them',text:'Are you free for a coffee next week?',t:now()});S.chats.mark.unread=true;renderTabs();if(S.tab==='chats')vChats();
+  toast(`<span class="apic"><svg width="22" height="14" viewBox="0 0 100 60"><path d="M4 18c14-8 30-8 46 4 16-12 32-12 46-4-2 18-14 30-28 30-9 0-14-6-18-12-4 6-9 12-18 12C18 48 6 36 4 18z" fill="none" stroke="#D3AE68" stroke-width="6"/></svg></span><span>${t}</span>`,()=>openChat('mark'));
+}
+
+/* Discover */
+function deckList(){return PEOPLE.filter(p=>p.deck!==false&&!S.seen.has(p.id)&&(S.filter==='Everyone'||p.status===S.filter.replace('Couples','Couple')))}
+function vDiscover(){
+  const f=['Everyone','Married','Attached','Single','Couples'];
+  $('#view').innerHTML=`<div class="chips">${f.map(x=>`<button class="chip" data-act="filter" data-f="${x}" aria-pressed="${S.filter===x}">${x}</button>`).join('')}</div><div class="deckwrap"><div class="deck" id="deck"></div><div class="actions" id="deckActs"></div></div>`;
+  renderDeck();
+}
+function renderDeck(){
+  const list=deckList(),deck=$('#deck'),acts=$('#deckActs');
+  if(!list.length){deck.outerHTML=`<div class="empty" id="deck"><h3>You’ve seen everyone nearby</h3><p>New members join every day. Try another filter, or start again.</p><button class="btn ghost" style="width:auto" data-act="reset-deck">Show everyone again</button></div>`;acts.innerHTML='';return}
+  deck.innerHTML=list.slice(0,2).reverse().map((p,i,a)=>{
+    const top=i===a.length-1;
+    return `<article class="card ${top?'':'behind'}" data-id="${p.id}" ${top?'tabindex="0"':''} aria-label="${p.name}, ${p.age}">${av(p)}<div class="shade"></div>
+      <span class="pill verified">${ic('shield',14,2)} Profile checked</span>${isMatch(p.id)?'':`<span class="pill masked">${ic('blur',14,2)} Photo masked</span>`}
+      <span class="stamp yes">Yes</span><span class="stamp no">Pass</span>
+      <div class="info"><h3>${p.name} <span>${p.age}</span></h3><div class="meta"><span>${p.status}</span><span>${ic('pin',13)} ${p.area}, ${p.miles} mi</span></div><div class="tags">${p.wants.map(w=>`<span>${w}</span>`).join('')}</div></div></article>`}).join('');
+  acts.innerHTML=`<button class="round" data-act="pass" aria-label="Pass">${ic('x',26,2)}</button><button class="round sm" data-act="msg-top" aria-label="Message">${ic('chat',20)}</button><button class="round like" data-act="like" aria-label="Like">${ic('heart',28,2)}</button>`;
+  const top=deck.querySelector('.card:not(.behind)');if(top)drag(top);
+}
+function drag(card){
+  let sx=0,sy=0,dx=0,on=false;const y=card.querySelector('.stamp.yes'),n=card.querySelector('.stamp.no');
+  card.addEventListener('pointerdown',e=>{on=true;sx=e.clientX;sy=e.clientY;dx=0;card.setPointerCapture(e.pointerId);card.style.transition='none'});
+  card.addEventListener('pointermove',e=>{if(!on)return;dx=e.clientX-sx;card.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`;y.style.opacity=Math.max(0,dx/100);n.style.opacity=Math.max(0,-dx/100)});
+  const end=()=>{if(!on)return;on=false;card.style.transition='';
+    if(dx>90)swipe('like');else if(dx<-90)swipe('pass');else{card.style.transform='';y.style.opacity=0;n.style.opacity=0;if(Math.abs(dx)<6)openProfile(card.dataset.id)}};
+  card.addEventListener('pointerup',end);card.addEventListener('pointercancel',end);
+  card.addEventListener('keydown',e=>{if(e.key==='ArrowRight')swipe('like');if(e.key==='ArrowLeft')swipe('pass');if(e.key==='Enter')openProfile(card.dataset.id)});
+}
+function swipe(dir,id){
+  const card=document.querySelector('#deck .card:not(.behind)');if(!card)return;id=id||card.dataset.id;
+  card.querySelector(dir==='like'?'.stamp.yes':'.stamp.no').style.opacity=1;
+  card.style.transform=`translateX(${dir==='like'?520:-520}px) rotate(${dir==='like'?24:-24}deg)`;
+  S.seen.add(id);
+  setTimeout(()=>{renderDeck();if(dir==='like')like(id)},260);
+}
+function like(id){
+  const p=byId(id);S.liked.add(id);S.seen.add(id);
+  if(p.likesYou){S.matches.add(id);if(!S.chats[id])S.chats[id]={unread:false,expiry:'Off',msgs:[]};renderTabs();showMatch(p)}
+  else toast(`<span class="apic">${ic('heart',18)}</span><span><b>Like sent</b>If ${p.name} likes you back, you’ll both be told.</span>`);
+}
+function showMatch(p){
+  const m=$('#match');
+  m.innerHTML=`<div class="pair">${av(me(),{reveal:true})}${av(p,{reveal:true})}</div><h2>It’s mutual</h2><p>You and ${p.name} both said yes. Your photos are now unmasked for each other, and only each other.</p>
+  <button class="btn primary" data-act="match-msg" data-id="${p.id}">Send ${p.name} a message</button><button class="btn ghost" data-act="match-close">Keep browsing</button>`;
+  m.classList.add('on');
+}
+
+/* Likes */
+function vLikes(){
+  const list=PEOPLE.filter(p=>p.likesYou&&!isMatch(p.id));
+  $('#view').innerHTML=`<div class="section-h">Likes you</div><p class="section-p">Like them back to unmask photos and start talking.</p>
+  ${S.plan==='trial'?`<div class="banner">${ic('star',22)}<div><b>Included in your free month</b>See who likes you without paying, for the next 30 days.</div></div>`:''}
+  ${list.length?`<div class="grid">${list.map(p=>`<button class="tile" data-act="profile" data-id="${p.id}">${av(p)}<div class="shade"></div><div class="t"><b>${p.name}, ${p.age}</b><small>${p.status}, ${p.miles} mi</small></div></button>`).join('')}</div>`
+  :`<div class="empty"><h3>All caught up</h3><p>Everyone who liked you is now a match. Head to Chats to say hello.</p></div>`}`;
+}
+
+/* Chats */
+function vChats(){
+  const ids=Object.keys(S.chats);
+  $('#view').innerHTML=`<div class="section-h">Chats</div><p class="section-p">${S.convLock?ic('lock',13)+' Conversation lock is on. Chats ask for your PIN.':'Conversations stay between the two of you.'}</p>
+  ${ids.map(id=>{const p=byId(id),c=S.chats[id],l=c.msgs[c.msgs.length-1];
+   return `<button class="row" data-act="open-chat" data-id="${id}">${av(p,{size:54})}<span class="txt"><b>${p.name}${c.expiry!=='Off'?ic('clock',14):''}${S.convLock?ic('lock',14):''}</b><span class="last">${S.convLock?'Locked conversation':l?(l.from==='me'?'You: ':'')+esc(l.text):'You matched. Say hello.'}</span></span><span class="time">${l?l.t:'New'}<br>${c.unread?'<i class="unread"></i>':''}</span></button>`}).join('')}`;
+}
+function openChat(id,skipLock){
+  if(S.convLock&&!skipLock){
+    sheet(`<h3>Enter your PIN</h3><p>Conversation lock is on.</p><div id="sheetPin"></div>`);
+    pinPad($('#sheetPin'),(v,api)=>{if(v===S.pin){closeSheet();openChat(id,true)}else api.fail('That PIN doesn’t match.')});return;
+  }
+  const p=byId(id),c=S.chats[id]||(S.chats[id]={unread:false,expiry:'Off',msgs:[]});c.unread=false;renderTabs();
+  const ov=$('#ov-chat');ov.dataset.id=id;
+  ov.innerHTML=`<div class="chathead"><button class="iconbtn" data-act="close-chat" aria-label="Back">${ic('back')}</button>${av(p,{size:40})}<span class="who"><b>${p.name}</b><small>${isMatch(id)?'Mutual interest':'Photos masked until you match'}</small></span>
+    <button class="iconbtn" data-act="expiry" aria-label="Message expiry">${ic('clock')}</button><button class="iconbtn" data-act="report" data-id="${id}" aria-label="More">${ic('more')}</button></div>
+    <div class="expiry" id="expBar"></div><div class="scroll" id="msgScroll"><div class="msgs" id="msgs"></div></div>
+    <div class="icebreak" id="ice"></div>
+    <form class="composer" id="composer"><input id="msgIn" placeholder="Write a message" autocomplete="off" aria-label="Message"><button class="send" aria-label="Send">${ic('send',20)}</button></form>`;
+  paintChat();openOv('ov-chat');
+  $('#composer').onsubmit=e=>{e.preventDefault();send($('#msgIn').value)};
+}
+function paintChat(){
+  const id=$('#ov-chat').dataset.id,c=S.chats[id];
+  $('#expBar').innerHTML=c.expiry==='Off'?`${ic('lock',13)} Private conversation. Tap the clock to make messages expire.`:`${ic('clock',13)} New messages delete after ${c.expiry}.`;
+  $('#msgs').innerHTML=`<div class="daymark">Messages are private to you and ${byId(id).name}</div>`+c.msgs.map(m=>`<div class="bub ${m.from}">${esc(m.text)}<div class="tm">${m.exp?ic('clock',11):''}${m.t}</div></div>`).join('');
+  $('#ice').innerHTML=c.msgs.length?'':['Hello, I loved your profile','What does a perfect afternoon look like?','Coffee or wine?'].map(t=>`<button class="chip" data-act="ice">${t}</button>`).join('');
+  const s=$('#msgScroll');s.scrollTop=s.scrollHeight;
+}
+function send(text){
+  text=text.trim();if(!text)return;const id=$('#ov-chat').dataset.id,c=S.chats[id];
+  c.msgs.push({from:'me',text,t:now(),exp:c.expiry!=='Off'});$('#msgIn').value='';paintChat();
+  const p=byId(id);setTimeout(()=>{
+    if($('#ov-chat').dataset.id!==id)return;
+    $('#msgs').insertAdjacentHTML('beforeend','<div class="typing" id="typing"><i></i><i></i><i></i></div>');const s=$('#msgScroll');s.scrollTop=s.scrollHeight;
+    setTimeout(()=>{const ix=S.replyIx[id]||0;S.replyIx[id]=ix+1;const r=p.replies[ix%p.replies.length];
+      c.msgs.push({from:'them',text:r,t:now(),exp:c.expiry!=='Off'});
+      if($('#ov-chat').classList.contains('open')&&$('#ov-chat').dataset.id===id)paintChat();else{c.unread=true;renderTabs()}},1500);
+  },700);
+}
+
+/* Profile */
+function openProfile(id){
+  const p=byId(id),m=isMatch(id);
+  $('#ov-profile').innerHTML=`<div class="scroll"><div class="hero">${av(p)}<div class="shade"></div><button class="iconbtn back" data-act="close-profile" aria-label="Back">${ic('back')}</button>
+  <div class="info"><span class="pill" style="background:rgba(255,255,255,.9);color:#2A1520">${ic('shield',14,2)} Profile checked</span><h2 style="margin-top:10px">${p.name}, ${p.age}</h2><div style="opacity:.85;font-size:14px;margin-top:4px">${p.status} · ${p.area} · ${p.miles} miles away</div></div></div>
+  <div class="detail">${m?'':`<div class="banner" style="margin:0 0 6px">${ic('blur',22)}<div><b>${p.name} masks photos</b>They unmask for you when you both say yes.</div></div>`}
+  <h4>About</h4><p>${p.bio}</p><h4>Looking for</h4><div class="seg">${p.wants.map(w=>`<span class="chip">${w}</span>`).join('')}</div>
+  <h4>Safety</h4><button class="link" data-act="report" data-id="${id}">Block or report ${p.name}</button></div></div>
+  <div class="dock">${m?`<button class="btn primary" style="max-width:260px" data-act="p-msg" data-id="${id}">${ic('chat',18)} Message</button>`:`<button class="round" data-act="p-pass" data-id="${id}" aria-label="Pass">${ic('x',26,2)}</button><button class="round sm" data-act="p-msg" data-id="${id}" aria-label="Message">${ic('chat',20)}</button><button class="round like" data-act="p-like" data-id="${id}" aria-label="Like">${ic('heart',28,2)}</button>`}</div>`;
+  openOv('ov-profile');
+}
+
+/* Forum */
+function vForum(){
+  const cats=['All','First steps','Privacy','Meet-ups','Stories'];const list=THREADS.filter(t=>S.forumCat==='All'||t.cat===S.forumCat);
+  $('#view').innerHTML=`<div class="section-h">The Kinky Forum</div><p class="section-p">Members-only discussion. Posts show your nickname, never your photo.</p>
+  <div class="chips">${cats.map(c=>`<button class="chip" data-act="fcat" data-c="${c}" aria-pressed="${S.forumCat===c}">${c}</button>`).join('')}</div>
+  ${list.map(t=>`<button class="thread" data-act="thread" data-id="${t.id}"><span class="cat">${t.cat}</span><h4>${t.title}</h4><span class="by"><span>${t.by}</span><span>${t.ago} ago</span><span>${t.replies.length} ${t.replies.length===1?'reply':'replies'}</span></span></button>`).join('')}`;
+}
+function openThread(id){
+  const t=THREADS.find(x=>x.id===id);
+  const post=(by,txt,ago)=>`<div class="post"><div class="by"><span class="mono">${by[0]}</span><span><b>${esc(by)}</b><br><small>${ago}</small></span></div>${esc(txt)}</div>`;
+  $('#ov-thread').innerHTML=`<div class="chathead"><button class="iconbtn" data-act="close-thread" aria-label="Back">${ic('back')}</button><span class="who"><b>${t.cat}</b><small>The Kinky Forum</small></span></div>
+  <div class="scroll"><div class="post" style="padding-bottom:6px;border:0"><h2 style="font-family:var(--display);font-weight:500;font-size:28px;line-height:1.1;margin:0">${t.title}</h2></div>${post(t.by,t.body,t.ago+' ago')}<div id="replies">${t.replies.map(r=>post(r[0],r[1],r[2]+' ago')).join('')}</div></div>
+  <form class="composer" id="fcomp"><input id="fin" placeholder="Reply as ${esc(S.nick||'Guest')}" aria-label="Reply"><button class="send" aria-label="Post reply">${ic('send',20)}</button></form>`;
+  openOv('ov-thread');
+  $('#fcomp').onsubmit=e=>{e.preventDefault();const v=$('#fin').value.trim();if(!v)return;t.replies.push([S.nick||'Guest',v,'Just now']);$('#replies').insertAdjacentHTML('beforeend',post(S.nick||'Guest',v,'Just now'));$('#fin').value='';toast(`<span class="apic">${ic('check',18)}</span><span><b>Reply posted</b>Shown under your nickname only.</span>`)};
+}
+
+/* Me */
+function vMe(){
+  const sw=(k,on)=>`<span class="switch" role="switch" aria-checked="${on}"></span>`;
+  const planName={free:'Free lifetime membership',trial:'Free first month',m1:'1 month membership',m3:'3 month membership',m6:'6 month membership'}[S.plan];
+  const planSub={free:'Free for women, for life. Every feature included.',trial:'23 days left. No payment taken yet.',m1:'Renews monthly at £25.',m3:'Renews every 3 months at £60.',m6:'Renews every 6 months at £90.'}[S.plan];
+  $('#view').innerHTML=`<div class="mecard">${av(me(),{size:72,reveal:!S.mask})}<div><h3>${esc(S.nick||'Guest')}</h3><small>${S.gender==='Couple'?'Couple':S.status} · ${esc(S.region)}</small><br><span class="pill" style="background:var(--surface2);margin-top:6px;color:var(--ok)">${ic('shield',13,2)} Profile checked</span></div></div>
+  <div class="plan"><b>${planName}</b><small>${planSub}</small>${S.plan==='trial'?'<div class="bar"><i style="width:23%"></i></div>':'<div style="height:12px"></div>'}<button data-act="plans">${S.plan==='free'?'See what’s included':S.plan==='trial'?'Choose a plan':'Manage membership'}</button></div>
+  <div class="group"><h4>Privacy</h4>
+   <button class="set" data-act="tog" data-k="mask"><span class="ico">${ic('blur',18)}</span><span class="txt"><b>Face masking and blurring</b><small>Your photos stay blurred until there’s mutual interest.</small></span>${sw('mask',S.mask)}</button>
+   <button class="set" data-act="tog" data-k="incognito"><span class="ico">${ic('ghost',18)}</span><span class="txt"><b>Incognito browsing</b><small>Only people you like can see your profile.</small></span>${sw('incognito',S.incognito)}</button>
+   <button class="set" data-act="tog" data-k="convLock"><span class="ico">${ic('lock',18)}</span><span class="txt"><b>Conversation lock</b><small>Ask for your PIN before opening any chat.</small></span>${sw('convLock',S.convLock)}</button>
+   <button class="set" data-act="tog" data-k="discreetNotif"><span class="ico">${ic('bell',18)}</span><span class="txt"><b>Discreet notifications</b><small>Hide names and message text on your lock screen.</small></span>${sw('discreetNotif',S.discreetNotif)}</button>
+   <button class="set" data-act="hide"><span class="ico">${ic('calc',18)}</span><span class="txt"><b>Quick hide</b><small>Turn the app into a calculator. Your PIN, then =, brings it back.</small></span><span class="val">Try it</span></button>
+  </div>
+  <div class="group"><h4>Safety</h4>
+   <button class="set" data-act="tips"><span class="ico">${ic('shield',18)}</span><span class="txt"><b>Safety tips for meeting</b><small>Public places, a trusted friend, your own transport.</small></span></button>
+   <button class="set" data-act="lockapp"><span class="ico">${ic('logout',18)}</span><span class="txt"><b>Lock app now</b><small>You’ll need your PIN to get back in.</small></span></button>
+  </div><div style="height:10px"></div>`;
+}
+
+/* Plans */
+let pick='m3';
+function openPlans(){
+  const feats=['Kinky Forum access','See photos','Face masking and blurring','Unlimited messages','Who likes me','Profile views','Block, report and restrict','Private match and mutual interest','Conversation lock (PIN)','Auto-delete and expiring messages'];
+  const women=S.plan==='free';
+  const tiers=[['m1','1 month','£25','£25 a month',''],['m3','3 months','£60','£20 a month','Popular'],['m6','6 months','£90','£15 a month','Best value']];
+  $('#ov-plans').innerHTML=`<div class="topbar"><button class="iconbtn" data-act="close-plans" aria-label="Back">${ic('back')}</button></div>
+  <div class="scroll"><div class="pad" style="padding-bottom:6px"><div class="h">${women?'Everything, free for life':'Choose your membership'}</div><p class="sub">${women?'Women get every feature at no cost. No trial, no catch.':'Every plan includes the full experience. Cancel any time in your app store settings.'}</p></div>
+  <div class="plans">${women?'':tiers.map(([k,n,p,eq,f])=>`<button class="pcard" data-act="pick-plan" data-p="${k}" aria-pressed="${pick===k}">${f?`<span class="flag">${f}</span>`:''}<span><b>${n}</b><small>${eq}</small></span><span class="price">${p}</span></button>`).join('')}
+  <ul class="feat">${feats.map(f=>`<li>${ic('check',18,2.2)}${f}</li>`).join('')}</ul>
+  ${women?'':`<div style="height:18px"></div><button class="btn primary" data-act="buy">${S.plan===pick?'Current plan':'Continue'}</button><p style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px">Billed discreetly. Your statement won’t mention dating.</p>`}</div></div>`;
+  openOv('ov-plans');
+}
+
+/* Calculator disguise */
+let calcIn='',calcExpr='';
+function setupCalc(){
+  const keys=[['AC','fn'],['±','fn'],['%','fn'],['÷','op'],['7'],['8'],['9'],['×','op'],['4'],['5'],['6'],['−','op'],['1'],['2'],['3'],['+','op'],['0','zero'],['.'],['=','op']];
+  $('#calcKeys').innerHTML=keys.map(([k,c=''])=>`<button class="${c}" data-c="${k}">${k}</button>`).join('');
+  $('#calcKeys').onclick=e=>{const k=e.target.closest('button')?.dataset.c;if(!k)return;const d=$('#calcDisp');
+    if(/[0-9.]/.test(k)){calcIn+=k;calcExpr+=k;d.textContent=calcIn}
+    else if(k==='AC'){calcIn='';calcExpr='';d.textContent='0'}
+    else if(k==='='){
+      if(calcExpr===S.pin){$('#calc').classList.remove('on');calcIn='';calcExpr='';d.textContent='0';return}
+      try{const r=Function('"use strict";return ('+calcExpr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/[^0-9+\-*/.]/g,'')+')')();d.textContent=Number.isFinite(r)?+r.toFixed(8):'Error';calcExpr=String(d.textContent);calcIn=''}catch(_){d.textContent='Error';calcExpr='';calcIn=''}
+    }else if(k==='±'||k==='%'){}
+    else{calcExpr+=k;calcIn=''}
+  };
+}
+function hideApp(){closeSheet();$('#calc').classList.add('on');calcIn='';calcExpr='';$('#calcDisp').textContent='0';
+  if(window.matchMedia('(max-width:860px)').matches)setTimeout(()=>{const t=$('#toast');t.style.zIndex=99;toast(`<span>Prototype hint: type your PIN (${S.pin}), then =</span>`);setTimeout(()=>t.style.zIndex='',3800)},600)}
+
+/* ---------- Event delegation ---------- */
+app.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,id=b.dataset.id;
+  switch(a){
+    case 'start-join':step=0;renderJoin();show('join');break;
+    case 'go-login':if(!S.gender){S.gender='Man';S.nick='Guest';S.plan='trial'}show('login');pinPad($('#loginPin'),(v,api)=>v===S.pin?enterApp():api.fail('That PIN doesn’t match. Try again.'));break;
+    case 'to-welcome':show('welcome');break;
+    case 'join-back':if(step===0)show('welcome');else{if(step===1)saveStep1();step--;renderJoin()}break;
+    case 'pick-gender':S.gender=b.dataset.g;renderJoin();break;
+    case 'pick-status':saveStep1();S.status=b.dataset.s;renderJoin();break;
+    case 'join-next':if(step===1)saveStep1();step++;renderJoin();break;
+    case 'tab':S.tab=b.dataset.t;render();break;
+    case 'filter':S.filter=b.dataset.f;vDiscover();break;
+    case 'reset-deck':S.seen=new Set();S.filter='Everyone';vDiscover();break;
+    case 'like':swipe('like');break;
+    case 'pass':swipe('pass');break;
+    case 'msg-top':{const c=document.querySelector('#deck .card:not(.behind)');if(c)openChat(c.dataset.id);break}
+    case 'match-close':$('#match').classList.remove('on');if(S.tab==='likes')vLikes();break;
+    case 'match-msg':$('#match').classList.remove('on');closeOv('ov-profile');openChat(id);break;
+    case 'profile':openProfile(id);break;
+    case 'close-profile':closeOv('ov-profile');break;
+    case 'p-like':closeOv('ov-profile');S.seen.add(id);like(id);if(S.tab==='discover')renderDeck();if(S.tab==='likes')vLikes();break;
+    case 'p-pass':closeOv('ov-profile');S.seen.add(id);if(S.tab==='discover')renderDeck();break;
+    case 'p-msg':openChat(id);break;
+    case 'open-chat':openChat(id);break;
+    case 'close-chat':closeOv('ov-chat');$('#ov-chat').dataset.id='';if(S.tab==='chats')vChats();break;
+    case 'expiry':{const c=S.chats[$('#ov-chat').dataset.id],o=['Off','1 hour','24 hours'];c.expiry=o[(o.indexOf(c.expiry)+1)%3];paintChat();break}
+    case 'ice':send(b.textContent);break;
+    case 'report':{const p=byId(id);sheet(`<h3>${p.name}</h3><p>Nobody is told when you block or report them.</p><button class="opt" data-act="done-report" data-m="Restricted. ${p.name} can’t see your photos.">Restrict photo access</button><button class="opt danger" data-act="done-report" data-m="${p.name} is blocked.">Block ${p.name}</button><button class="opt danger" data-act="done-report" data-m="Thanks. Our team will review ${p.name}’s profile.">Report profile</button><button class="opt" data-act="close-sheet">Cancel</button>`);break}
+    case 'done-report':closeSheet();toast(`<span class="apic">${ic('shield',18)}</span><span>${b.dataset.m}</span>`);break;
+    case 'close-sheet':closeSheet();break;
+    case 'fcat':S.forumCat=b.dataset.c;vForum();break;
+    case 'thread':openThread(id);break;
+    case 'close-thread':closeOv('ov-thread');vForum();break;
+    case 'tog':{const k=b.querySelector('.switch')&&b.dataset.k;S[k]=!S[k];vMe();
+      const msg={mask:S.mask?'Your photos are masked until mutual interest.':'Your photos are visible to all members.',incognito:S.incognito?'Incognito on. Only people you like can see you.':'Incognito off.',convLock:S.convLock?'Chats now ask for your PIN.':'Conversation lock off.',discreetNotif:S.discreetNotif?'Notifications won’t show names or text.':'Notifications show sender and preview.'}[k];
+      toast(`<span class="apic">${ic('check',18)}</span><span>${msg}</span>`);break}
+    case 'hide':hideApp();break;
+    case 'tips':sheet(`<h3>Meeting safely</h3><p>Simple habits members recommend.</p><ul class="feat" style="margin-top:0">${['Meet somewhere public the first time','Tell a trusted friend where you’ll be','Use your own transport','Keep chats in the app until you’re comfortable','Report anyone who pressures you'].map(t=>`<li>${ic('check',18,2.2)}${t}</li>`).join('')}</ul><div style="height:18px"></div><button class="btn ghost" data-act="close-sheet">Close</button>`);break;
+    case 'lockapp':show('login');pinPad($('#loginPin'),(v,api)=>v===S.pin?enterApp():api.fail('That PIN doesn’t match. Try again.'));break;
+    case 'plans':openPlans();break;
+    case 'close-plans':closeOv('ov-plans');if(S.tab==='me')vMe();break;
+    case 'pick-plan':pick=b.dataset.p;openPlans();break;
+    case 'buy':{if(S.plan===pick)return;const t={m1:['1 month','£25.00'],m3:['3 months','£60.00'],m6:['6 months','£90.00']}[pick];
+      sheet(`<h3>Confirm membership</h3><p>Indulgent Affairs, ${t[0]}, renews automatically.</p><div class="paybox"><span>Total today</span><b>${t[1]}</b></div><button class="btn primary" data-act="pay">Pay with Apple Pay</button><p style="font-size:12px;text-align:center;margin-top:12px">Prototype only. No payment is taken.</p>`);break}
+    case 'pay':b.textContent='Processing…';setTimeout(()=>{S.plan=pick;closeSheet();closeOv('ov-plans');S.tab='me';render();toast(`<span class="apic">${ic('check',18)}</span><span><b>Membership active</b>Thank you. Enjoy every feature.</span>`)},1100);break;
+  }
+});
+function saveStep1(){const n=$('#nick'),r=$('#region');if(n)S.nick=n.value.trim();if(r)S.region=r.value.trim()||'London'}
+
+/* ---------- Desktop demo shortcuts ---------- */
+function ensureIn(){
+  closeSheet();$('#calc').classList.remove('on');$('#match').classList.remove('on');['ov-profile','ov-chat','ov-thread','ov-plans'].forEach(closeOv);
+  if(!$('#main').classList.contains('on')){if(!S.gender){S.gender='Man';S.nick='Guest';S.plan='trial'}enterApp()}
+}
+document.querySelector('.tries').addEventListener('click',e=>{
+  const d=e.target.closest('[data-demo]')?.dataset.demo;if(!d)return;
+  if(d==='join'){closeSheet();$('#calc').classList.remove('on');['ov-profile','ov-chat','ov-thread','ov-plans'].forEach(closeOv);S.gender=null;step=0;renderJoin();show('join');return}
+  ensureIn();
+  if(d==='match'){S.seen.delete('sophie');S.matches.delete('sophie');S.filter='Everyone';S.tab='discover';
+    // put Sophie on top
+    const i=PEOPLE.findIndex(p=>p.id==='sophie');PEOPLE.unshift(...PEOPLE.splice(i,1));render();
+    toast(`<span class="apic">${ic('heart',18)}</span><span><b>Sophie is on top</b>Tap the heart or swipe right.</span>`)}
+  if(d==='hide')setTimeout(hideApp,150);
+  if(d==='chat'){S.tab='chats';render();setTimeout(()=>openChat('claire',true),200)}
+  if(d==='plans'){if(S.plan==='free'){S.gender='Man';S.plan='trial'}S.tab='me';render();setTimeout(openPlans,200)}
+});
+
+/* ---------- Boot ---------- */
+setupCalc();
+document.querySelector('#login [data-act="to-welcome"]').innerHTML=ic('back');
+setTimeout(()=>show('welcome'),2100);
+})();
+</script>
+</body>
+</html>
